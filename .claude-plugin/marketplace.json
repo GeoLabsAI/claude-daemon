@@ -1,0 +1,48 @@
+{
+  "name": "claude-daemon-marketplace",
+  "description": "Professional TypeScript/Next.js development marketplace featuring automated code quality, health checks, API testing, and GitHub workflow optimization skills",
+  "version": "1.0.0",
+  "owner": {
+    "name": "goshazvir (GeoLabsAI)",
+    "email": "goshazvir@gmail.com",
+    "organization": "GeoLabsAI",
+    "url": "https://github.com/GeoLabsAI"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GeoLabsAI/claude-daemon"
+  },
+  "homepage": "https://github.com/GeoLabsAI/claude-daemon",
+  "license": "MIT",
+  "keywords": [
+    "typescript",
+    "nextjs",
+    "development-tools",
+    "code-quality",
+    "automation",
+    "linting",
+    "api-testing",
+    "github-workflows"
+  ],
+  "plugins": [
+    {
+      "name": "claude-daemon",
+      "source": "./",
+      "version": "1.0.0",
+      "description": "Professional development automation with 8 specialized skills: code quality enforcement, TypeScript health monitoring, API testing, GitHub workflow optimization, and Next.js route analysis",
+      "author": {
+        "name": "goshazvir (GeoLabsAI)",
+        "email": "goshazvir@gmail.com",
+        "url": "https://github.com/GeoLabsAI"
+      },
+      "license": "MIT",
+      "tags": [
+        "typescript",
+        "nextjs",
+        "linting",
+        "testing",
+        "automation"
+      ]
+    }
+  ]
+}

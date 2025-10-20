@@ -1,0 +1,15 @@
+name: Pre-Commit Checks
+description: Run automated checks before committing code
+
+steps:
+  - name: Run linter
+    skill: lint-and-fix
+    
+  - name: Check TypeScript
+    skill: typescript-health-check
+    
+  - name: Check for Cyrillic
+    skill: no-cyrillic-check
+    
+  - name: Stage fixes
+    command: git add -u

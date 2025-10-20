@@ -1,0 +1,79 @@
+{
+  "description": "Example MCP server configurations for claude-daemon plugin",
+  "mcpServers": {
+    "fetch": {
+      "description": "HTTP fetch server for API testing and GitHub integration",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "env": {
+        "ALLOWED_DOMAINS": "api.github.com,localhost,127.0.0.1"
+      },
+      "usage": "Used by api-smoke and gh-pr-digest skills"
+    },
+    "filesystem": {
+      "description": "Filesystem access server for file operations",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${PROJECT_ROOT}"],
+      "usage": "Provides safe filesystem access within project boundaries"
+    },
+    "github": {
+      "description": "GitHub API integration (optional)",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "usage": "Enhanced GitHub integration for gh-pr-digest skill",
+      "note": "Requires GITHUB_TOKEN environment variable"
+    },
+    "postgres": {
+      "description": "PostgreSQL database access (optional)",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "env": {
+        "POSTGRES_CONNECTION_STRING": "${DATABASE_URL}"
+      },
+      "usage": "For database-related development tasks",
+      "note": "Only enable if your project uses PostgreSQL"
+    },
+    "puppeteer": {
+      "description": "Browser automation (optional)",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "usage": "For browser-based testing and automation",
+      "note": "Resource-intensive, enable only when needed"
+    }
+  },
+  "notes": {
+    "required": [
+      "fetch - Required for api-smoke and gh-pr-digest skills",
+      "filesystem - Required for file operations"
+    ],
+    "optional": [
+      "github - Enhanced GitHub integration",
+      "postgres - Database access",
+      "puppeteer - Browser automation"
+    ],
+    "environment_variables": {
+      "GITHUB_TOKEN": "GitHub personal access token for API access",
+      "DATABASE_URL": "PostgreSQL connection string",
+      "ALLOWED_DOMAINS": "Comma-separated list of domains for fetch server"
+    },
+    "usage": "Configure these in your plugin.json under 'mcpServers' section"
+  },
+  "example_plugin_json": {
+    "mcpServers": {
+      "fetch": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-fetch"],
+        "env": {
+          "ALLOWED_DOMAINS": "api.github.com,localhost"
+        }
+      },
+      "filesystem": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-filesystem", "${PROJECT_ROOT}"]
+      }
+    }
+  }
+}

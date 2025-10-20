@@ -1,0 +1,74 @@
+{
+  "name": "claude-daemon",
+  "version": "1.0.0",
+  "description": "Development automation toolkit with Skills for TypeScript/Next.js projects",
+  "author": "goshazvir (GeoLabsAI)",
+  "license": "MIT",
+  "homepage": "https://github.com/GeoLabsAI/claude-daemon",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GeoLabsAI/claude-daemon.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GeoLabsAI/claude-daemon/issues"
+  },
+  "keywords": [
+    "typescript",
+    "nextjs",
+    "linting",
+    "automation",
+    "development-tools",
+    "code-quality",
+    "skills"
+  ],
+  "engines": {
+    "claude-code": ">=1.0.0",
+    "node": ">=18.0.0"
+  },
+  "skills": [
+    "skills/lint-and-fix",
+    "skills/typescript-health-check",
+    "skills/detect-unused-imports",
+    "skills/route-map-nextjs",
+    "skills/zustand-store-audit",
+    "skills/api-contract-checker",
+    "skills/api-smoke",
+    "skills/gh-pr-digest",
+    "skills/no-cyrillic-check"
+  ],
+  "permissions": {
+    "allowedTools": [
+      "Read(**/*.{ts,tsx,js,jsx,json,md})",
+      "Edit(**/*.{ts,tsx,js,jsx})",
+      "Bash(git:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(tsc:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(curl:*)",
+      "Glob",
+      "Grep"
+    ],
+    "deniedTools": [
+      "Edit(/node_modules/**)",
+      "Edit(/.git/**)",
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)"
+    ]
+  },
+  "mcpServers": {
+    "fetch": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "env": {
+        "ALLOWED_DOMAINS": "api.github.com,localhost"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${PROJECT_ROOT}"]
+    }
+  }
+}

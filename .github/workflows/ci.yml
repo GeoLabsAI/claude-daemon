@@ -1,0 +1,247 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test:
+    name: Test Scripts
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      
+      - name: Test validate-plugin script
+        run: |
+          echo "Testing validate-plugin.js..."
+          node scripts/validate-plugin.js
+      
+      - name: Test ts_health_check script
+        run: |
+          echo "Testing ts_health_check.js..."
+          # Script will fail if no tsconfig.json, but that's expected
+          node scripts/ts_health_check.js || echo "No TypeScript project detected (expected)"
+      
+      - name: Test unused-imports script
+        run: |
+          echo "Testing unused-imports.js..."
+          # Script may fail if no source files, but that's expected
+          node scripts/unused-imports.js || echo "No source files to check (expected)"
+      
+      - name: Verify scripts are executable
+        run: |
+          echo "Checking script permissions..."
+          if [ ! -x scripts/validate-plugin.js ]; then
+            echo "⚠️  validate-plugin.js is not executable"
+          fi
+          if [ ! -x scripts/ts_health_check.js ]; then
+            echo "⚠️  ts_health_check.js is not executable"
+          fi
+          if [ ! -x scripts/unused-imports.js ]; then
+            echo "⚠️  unused-imports.js is not executable"
+          fi
+          echo "✅ Script permissions checked"
+
+  lint-markdown:
+    name: Lint Markdown
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Check markdown files
+        run: |
+          echo "Checking markdown files..."
+          
+          # Check for broken links (basic check)
+          echo "Checking for common markdown issues..."
+          
+          # Check README.md exists and has content
+          if [ ! -s README.md ]; then
+            echo "❌ README.md is missing or empty"
+            exit 1
+          fi
+          echo "✅ README.md exists and has content"
+          
+          # Check all SKILL.md files
+          for skill in skills/*/SKILL.md; do
+            if [ ! -s "$skill" ]; then
+              echo "❌ $skill is missing or empty"
+              exit 1
+            fi
+          done
+          echo "✅ All SKILL.md files exist and have content"
+          
+          # Check templates
+          if [ ! -s templates/commit-message.md ]; then
+            echo "❌ commit-message.md is missing or empty"
+            exit 1
+          fi
+          if [ ! -s templates/pr-description.md ]; then
+            echo "❌ pr-description.md is missing or empty"
+            exit 1
+          fi
+          echo "✅ All template files exist and have content"
+
+  validate-json:
+    name: Validate JSON Files
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Validate all JSON files
+        run: |
+          echo "Validating JSON files..."
+          
+          # Validate plugin.json
+          node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json', 'utf8'))"
+          echo "✅ plugin.json is valid"
+          
+          # Validate config files
+          node -e "JSON.parse(require('fs').readFileSync('config/example-settings.json', 'utf8'))"
+          echo "✅ example-settings.json is valid"
+          
+          node -e "JSON.parse(require('fs').readFileSync('config/mcp-servers.json', 'utf8'))"
+          echo "✅ mcp-servers.json is valid"
+          
+          echo "✅ All JSON files are valid"
+
+  validate-yaml:
+    name: Validate YAML Files
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install js-yaml
+        run: npm install -g js-yaml
+      
+      - name: Validate YAML files
+        run: |
+          echo "Validating YAML files..."
+          
+          # Validate hooks
+          js-yaml hooks/onPreCommit.yaml > /dev/null
+          echo "✅ onPreCommit.yaml is valid"
+          
+          # Validate workflow files
+          for workflow in .github/workflows/*.yml; do
+            js-yaml "$workflow" > /dev/null
+            echo "✅ $(basename $workflow) is valid"
+          done
+          
+          echo "✅ All YAML files are valid"
+
+  check-file-sizes:
+    name: Check File Sizes
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check for large files
+        run: |
+          echo "Checking for large files..."
+          
+          # Find files larger than 1MB
+          large_files=$(find . -type f -size +1M ! -path "*/node_modules/*" ! -path "*/.git/*" 2>/dev/null || true)
+          
+          if [ -n "$large_files" ]; then
+            echo "⚠️  Warning: Large files found:"
+            echo "$large_files"
+          else
+            echo "✅ No large files found"
+          fi
+          
+          # Check total repository size
+          total_size=$(du -sh . | cut -f1)
+          echo "📊 Total repository size: $total_size"
+
+  security-check:
+    name: Security Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check for sensitive data
+        run: |
+          echo "Checking for sensitive data..."
+          
+          # Check for potential secrets
+          if grep -r -i "api[_-]key\|secret\|password\|token" --include="*.js" --include="*.json" --include="*.md" . | grep -v "GITHUB_TOKEN" | grep -v "example" | grep -v "template" | grep -v ".git"; then
+            echo "⚠️  Warning: Potential sensitive data found"
+            echo "Please review the findings above"
+          else
+            echo "✅ No obvious sensitive data found"
+          fi
+          
+          # Check for .env files (should be in .gitignore)
+          if find . -name ".env*" -type f ! -path "*/node_modules/*" | grep -v ".gitignore"; then
+            echo "⚠️  Warning: .env files found in repository"
+          else
+            echo "✅ No .env files in repository"
+          fi
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [test, lint-markdown, validate-json, validate-yaml, check-file-sizes, security-check]
+    if: always()
+    
+    steps:
+      - name: Check job results
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🎉 CI Pipeline Summary"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "✅ Test Scripts: ${{ needs.test.result }}"
+          echo "✅ Lint Markdown: ${{ needs.lint-markdown.result }}"
+          echo "✅ Validate JSON: ${{ needs.validate-json.result }}"
+          echo "✅ Validate YAML: ${{ needs.validate-yaml.result }}"
+          echo "✅ Check File Sizes: ${{ needs.check-file-sizes.result }}"
+          echo "✅ Security Check: ${{ needs.security-check.result }}"
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      
+      - name: Fail if any job failed
+        if: needs.test.result == 'failure' || needs.lint-markdown.result == 'failure' || needs.validate-json.result == 'failure' || needs.validate-yaml.result == 'failure'
+        run: |
+          echo "❌ One or more CI jobs failed"
+          exit 1

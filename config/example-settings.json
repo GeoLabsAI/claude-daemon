@@ -1,0 +1,33 @@
+{
+  "description": "Example settings for projects using claude-daemon plugin",
+  "permissions": {
+    "allowedTools": [
+      "Read(**/*.{ts,tsx,js,jsx,json,md})",
+      "Edit(**/*.{ts,tsx,js,jsx})",
+      "Bash(git:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(tsc:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(curl:*)",
+      "Glob",
+      "Grep"
+    ],
+    "deniedTools": [
+      "Edit(/node_modules/**)",
+      "Edit(/.git/**)",
+      "Edit(/.env*)",
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)"
+    ]
+  },
+  "permissionMode": "ask",
+  "notes": {
+    "permissionMode": "Options: 'ask' (prompt for each action), 'acceptEdits' (auto-accept edits), 'acceptAll' (auto-accept everything)",
+    "allowedTools": "Glob patterns for allowed operations. Use * for wildcards.",
+    "deniedTools": "Explicitly denied operations take precedence over allowed ones.",
+    "usage": "Copy this file to your project root as .claude/settings.json and customize as needed"
+  }
+}
